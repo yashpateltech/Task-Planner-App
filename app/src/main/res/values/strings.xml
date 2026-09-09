@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">Task Planner</string>
+    <string name="dashboard_title">Task Planner</string>
+    <string name="settings_title">Settings &amp; Storage</string>
+    <string name="add_task_title">New Task</string>
+    <string name="edit_task_title">Edit Task</string>
+    <string name="task_title_hint">Task Title</string>
+    <string name="task_desc_hint">Description (Optional)</string>
+    <string name="scheduled_date">Date</string>
+    <string name="scheduled_time">Time</string>
+    <string name="save_task">Save Task</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="search_hint">Search tasks…</string>
+    <string name="export_backup">Export Backup (JSON)</string>
+    <string name="import_backup">Import Backup (JSON)</string>
+    <string name="app_settings">Open OS Storage Settings</string>
+    <string name="storage_stats">Local Storage Statistics</string>
+    <string name="theme_preferences">Appearance</string>
+    <string name="alarm_preferences">Alarms &amp; Notifications</string>
+    <string name="no_tasks_title">No Tasks Yet</string>
+    <string name="no_tasks_desc">Tap + below to schedule your first task with an exact alarm reminder.</string>
+</resources>

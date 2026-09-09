@@ -1,0 +1,6 @@
+{
+  "name": "Task Planner",
+  "description": "Production-ready Android Task Planner with Room database, exact alarms, DataStore preferences, and JSON backup & restore.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
