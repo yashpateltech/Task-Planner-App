@@ -20,4 +20,8 @@
     <string name="alarm_preferences">Alarms &amp; Notifications</string>
     <string name="no_tasks_title">No Tasks Yet</string>
     <string name="no_tasks_desc">Tap + below to schedule your first task with an exact alarm reminder.</string>
+    <string name="footer_made_with_love">Made with love for you</string>
+    <string name="calendar_analytics_title">Calendar &amp; Task Graph</string>
+    <string name="completed_tasks_label">Completed</string>
+    <string name="pending_tasks_label">Pending</string>
 </resources>

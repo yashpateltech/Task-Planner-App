@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,7 +27,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Alarm
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -61,6 +65,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -72,8 +77,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.alarm.AlarmScheduler
 import com.example.data.TaskEntity
 import com.example.ui.components.AddTaskBottomSheet
+import com.example.ui.components.CalendarGraphDialog
 import com.example.ui.components.DeleteConfirmDialog
+import com.example.ui.components.MadeWithLoveFooter
 import com.example.ui.components.TaskItemCard
+import com.example.ui.theme.DarkBlackText
+import com.example.ui.theme.DarkBlackVariantText
+import com.example.ui.theme.PinkGradients
+import com.example.ui.theme.PinkPrimary
+import com.example.ui.theme.WhiteBackground
 import com.example.viewmodel.TaskFilter
 import com.example.viewmodel.TaskViewModel
 import kotlinx.coroutines.launch
@@ -102,6 +114,7 @@ fun DashboardScreen(
 
     var isSearchExpanded by remember { mutableStateOf(false) }
     var showAddBottomSheet by remember { mutableStateOf(false) }
+    var showCalendarGraphDialog by remember { mutableStateOf(false) }
     var taskToEdit by remember { mutableStateOf<TaskEntity?>(null) }
     var taskToDelete by remember { mutableStateOf<TaskEntity?>(null) }
 
@@ -124,6 +137,7 @@ fun DashboardScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = {
@@ -131,19 +145,31 @@ fun DashboardScreen(
                         TextField(
                             value = searchQuery,
                             onValueChange = viewModel::onSearchQueryChange,
-                            placeholder = { Text("Search title, notes…") },
+                            placeholder = {
+                                Text(
+                                    text = "Search title, notes…",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                )
+                            },
                             singleLine = true,
                             colors = TextFieldDefaults.colors(
+                                focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
                                 focusedContainerColor = Color.Transparent,
                                 unfocusedContainerColor = Color.Transparent,
                                 disabledContainerColor = Color.Transparent,
                                 focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent
+                                unfocusedIndicatorColor = Color.Transparent,
+                                cursorColor = PinkPrimary
                             ),
                             trailingIcon = {
                                 if (searchQuery.isNotEmpty()) {
                                     IconButton(onClick = { viewModel.onSearchQueryChange("") }) {
-                                        Icon(Icons.Default.Clear, contentDescription = "Clear search")
+                                        Icon(
+                                            Icons.Default.Clear,
+                                            contentDescription = "Clear search",
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
                                     }
                                 }
                             },
@@ -153,9 +179,24 @@ fun DashboardScreen(
                         )
                     } else {
                         Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .background(PinkGradients.Primary, shape = CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.TaskAlt,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
                             Text(
                                 text = "Task Planner",
-                                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onBackground
                             )
                         }
                     }
@@ -172,7 +213,19 @@ fun DashboardScreen(
                     ) {
                         Icon(
                             imageVector = if (isSearchExpanded) Icons.Default.Clear else Icons.Default.Search,
-                            contentDescription = if (isSearchExpanded) "Close Search" else "Search Tasks"
+                            contentDescription = if (isSearchExpanded) "Close Search" else "Search Tasks",
+                            tint = PinkPrimary
+                        )
+                    }
+
+                    IconButton(
+                        onClick = { showCalendarGraphDialog = true },
+                        modifier = Modifier.testTag("calendar_graph_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CalendarMonth,
+                            contentDescription = "Calendar & Task Graphs",
+                            tint = PinkPrimary
                         )
                     }
 
@@ -182,36 +235,135 @@ fun DashboardScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings & Storage"
+                            contentDescription = "Settings & Storage",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         },
         floatingActionButton = {
-            ExtendedFloatingActionButton(
+            Surface(
                 onClick = {
                     taskToEdit = null
                     showAddBottomSheet = true
                 },
-                icon = {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = null)
-                },
-                text = { Text("New Task") },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = RoundedCornerShape(18.dp),
+                shadowElevation = 6.dp,
+                color = Color.Transparent,
                 modifier = Modifier.testTag("add_task_fab")
-            )
+            ) {
+                Box(
+                    modifier = Modifier
+                        .background(PinkGradients.Primary)
+                        .padding(horizontal = 20.dp, vertical = 14.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = null,
+                            tint = Color.White
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "New Task",
+                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                            color = Color.White
+                        )
+                    }
+                }
+            }
         }
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
                 .padding(innerPadding)
         ) {
+            // Header summary banner with pink gradient
+            if (!isSearchExpanded && searchQuery.isEmpty()) {
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                        .clickable { showCalendarGraphDialog = true }
+                        .testTag("daily_schedule_card"),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(PinkGradients.Header)
+                            .padding(horizontal = 18.dp, vertical = 14.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = "Daily Schedule",
+                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                        color = Color.White
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Surface(
+                                        shape = RoundedCornerShape(6.dp),
+                                        color = Color.White.copy(alpha = 0.25f)
+                                    ) {
+                                        Text(
+                                            text = "Graphs 📊",
+                                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                            color = Color.White,
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = "${storageStats.pendingCount} pending • ${storageStats.completedCount} completed",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color.White.copy(alpha = 0.9f)
+                                )
+                            }
+
+                            Surface(
+                                shape = RoundedCornerShape(10.dp),
+                                color = Color.White.copy(alpha = 0.22f),
+                                onClick = { showCalendarGraphDialog = true },
+                                modifier = Modifier.testTag("open_calendar_graph_pill")
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.BarChart,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "${storageStats.totalCount} Total",
+                                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                        color = Color.White
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             // Permission Warnings if needed
             if (!hasNotificationPermission && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 Card(
@@ -221,7 +373,7 @@ fun DashboardScreen(
                         .testTag("notification_permission_banner"),
                     shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                        containerColor = Color(0xFFFFF0F5)
                     )
                 ) {
                     Row(
@@ -238,13 +390,13 @@ fun DashboardScreen(
                             Icon(
                                 imageVector = Icons.Default.Notifications,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onTertiaryContainer
+                                tint = PinkPrimary
                             )
                             Spacer(modifier = Modifier.width(10.dp))
                             Text(
                                 text = "Notifications are disabled. Grant permission to receive task alarms.",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                                color = Color(0xFF4C0519)
                             )
                         }
                         Spacer(modifier = Modifier.width(8.dp))
@@ -252,7 +404,7 @@ fun DashboardScreen(
                             onClick = onRequestNotificationPermission,
                             modifier = Modifier.testTag("grant_notification_permission_button")
                         ) {
-                            Text("Enable", fontSize = 12.sp)
+                            Text("Enable", fontSize = 12.sp, color = PinkPrimary)
                         }
                     }
                 }
@@ -266,7 +418,7 @@ fun DashboardScreen(
                         .testTag("exact_alarm_permission_banner"),
                     shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        containerColor = Color(0xFFFCE7F3)
                     )
                 ) {
                     Row(
@@ -283,13 +435,13 @@ fun DashboardScreen(
                             Icon(
                                 imageVector = Icons.Default.Alarm,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                tint = PinkPrimary
                             )
                             Spacer(modifier = Modifier.width(10.dp))
                             Text(
                                 text = "Exact alarms permission needed for timely task reminders.",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                                color = Color(0xFF701A75)
                             )
                         }
                         Spacer(modifier = Modifier.width(8.dp))
@@ -298,7 +450,7 @@ fun DashboardScreen(
                                 context.startActivity(AlarmScheduler.getExactAlarmSettingsIntent(context))
                             }
                         ) {
-                            Text("Allow", fontSize = 12.sp)
+                            Text("Allow", fontSize = 12.sp, color = PinkPrimary)
                         }
                     }
                 }
@@ -314,24 +466,75 @@ fun DashboardScreen(
                 FilterChip(
                     selected = filterStatus == TaskFilter.ALL,
                     onClick = { viewModel.onFilterChange(TaskFilter.ALL) },
-                    label = { Text("All (${storageStats.totalCount})") },
-                    colors = FilterChipDefaults.filterChipColors(),
+                    label = {
+                        Text(
+                            text = "All (${storageStats.totalCount})",
+                            fontWeight = if (filterStatus == TaskFilter.ALL) FontWeight.Bold else FontWeight.Medium
+                        )
+                    },
+                    border = FilterChipDefaults.filterChipBorder(
+                        enabled = true,
+                        selected = filterStatus == TaskFilter.ALL,
+                        borderColor = MaterialTheme.colorScheme.outline,
+                        selectedBorderColor = PinkPrimary,
+                        borderWidth = 1.dp
+                    ),
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = PinkPrimary,
+                        selectedLabelColor = Color.White,
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        labelColor = MaterialTheme.colorScheme.onSurface
+                    ),
                     modifier = Modifier.testTag("filter_all")
                 )
 
                 FilterChip(
                     selected = filterStatus == TaskFilter.PENDING,
                     onClick = { viewModel.onFilterChange(TaskFilter.PENDING) },
-                    label = { Text("Pending (${storageStats.pendingCount})") },
-                    colors = FilterChipDefaults.filterChipColors(),
+                    label = {
+                        Text(
+                            text = "Pending (${storageStats.pendingCount})",
+                            fontWeight = if (filterStatus == TaskFilter.PENDING) FontWeight.Bold else FontWeight.Medium
+                        )
+                    },
+                    border = FilterChipDefaults.filterChipBorder(
+                        enabled = true,
+                        selected = filterStatus == TaskFilter.PENDING,
+                        borderColor = MaterialTheme.colorScheme.outline,
+                        selectedBorderColor = PinkPrimary,
+                        borderWidth = 1.dp
+                    ),
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = PinkPrimary,
+                        selectedLabelColor = Color.White,
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        labelColor = MaterialTheme.colorScheme.onSurface
+                    ),
                     modifier = Modifier.testTag("filter_pending")
                 )
 
                 FilterChip(
                     selected = filterStatus == TaskFilter.COMPLETED,
                     onClick = { viewModel.onFilterChange(TaskFilter.COMPLETED) },
-                    label = { Text("Completed (${storageStats.completedCount})") },
-                    colors = FilterChipDefaults.filterChipColors(),
+                    label = {
+                        Text(
+                            text = "Completed (${storageStats.completedCount})",
+                            fontWeight = if (filterStatus == TaskFilter.COMPLETED) FontWeight.Bold else FontWeight.Medium
+                        )
+                    },
+                    border = FilterChipDefaults.filterChipBorder(
+                        enabled = true,
+                        selected = filterStatus == TaskFilter.COMPLETED,
+                        borderColor = MaterialTheme.colorScheme.outline,
+                        selectedBorderColor = PinkPrimary,
+                        borderWidth = 1.dp
+                    ),
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = PinkPrimary,
+                        selectedLabelColor = Color.White,
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        labelColor = MaterialTheme.colorScheme.onSurface
+                    ),
                     modifier = Modifier.testTag("filter_completed")
                 )
             }
@@ -350,14 +553,14 @@ fun DashboardScreen(
                     ) {
                         Surface(
                             shape = CircleShape,
-                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                            color = Color(0xFFFDE8EF),
                             modifier = Modifier.size(96.dp)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     imageVector = Icons.Outlined.TaskAlt,
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
+                                    tint = PinkPrimary,
                                     modifier = Modifier.size(48.dp)
                                 )
                             }
@@ -383,6 +586,9 @@ fun DashboardScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center
                         )
+
+                        Spacer(modifier = Modifier.height(24.dp))
+                        MadeWithLoveFooter(modifier = Modifier.testTag("empty_state_footer"))
                     }
                 }
             } else {
@@ -400,35 +606,42 @@ fun DashboardScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(vertical = 4.dp),
-                                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
+                                color = MaterialTheme.colorScheme.background
                             ) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier.padding(vertical = 4.dp)
                                 ) {
                                     val isOverdue = dateHeader.equals("Overdue", ignoreCase = true)
-                                    Text(
-                                        text = dateHeader,
-                                        style = MaterialTheme.typography.titleSmall.copy(
-                                            fontWeight = FontWeight.Bold
-                                        ),
-                                        color = if (isOverdue) {
-                                            MaterialTheme.colorScheme.error
-                                        } else {
-                                            MaterialTheme.colorScheme.primary
-                                        }
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Surface(
-                                        shape = RoundedCornerShape(12.dp),
-                                        color = if (isOverdue) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceContainerHighest
+                                    Box(
+                                        modifier = Modifier
+                                            .background(
+                                                brush = if (isOverdue) Brush.horizontalGradient(listOf(Color(0xFFE11D48), Color(0xFFFF5252))) else PinkGradients.Primary,
+                                                shape = RoundedCornerShape(12.dp)
+                                            )
+                                            .padding(horizontal = 12.dp, vertical = 4.dp)
                                     ) {
-                                        Text(
-                                            text = tasksInGroup.size.toString(),
-                                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                            color = if (isOverdue) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                                        )
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text(
+                                                text = dateHeader,
+                                                style = MaterialTheme.typography.labelMedium.copy(
+                                                    fontWeight = FontWeight.Bold
+                                                ),
+                                                color = Color.White
+                                            )
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Surface(
+                                                shape = CircleShape,
+                                                color = Color.White.copy(alpha = 0.25f)
+                                            ) {
+                                                Text(
+                                                    text = tasksInGroup.size.toString(),
+                                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                                    color = Color.White,
+                                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp)
+                                                )
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -450,9 +663,24 @@ fun DashboardScreen(
                             )
                         }
                     }
+
+                    // Requested footer at the bottom of the list
+                    item(key = "footer_made_with_love") {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        MadeWithLoveFooter(modifier = Modifier.testTag("list_footer"))
+                    }
                 }
             }
         }
+    }
+
+    // Calendar & Task Daily Graph Analytics Dialog
+    if (showCalendarGraphDialog) {
+        CalendarGraphDialog(
+            tasks = allTasks,
+            onDismiss = { showCalendarGraphDialog = false },
+            onToggleTaskCompleted = { viewModel.toggleTaskCompleted(it) }
+        )
     }
 
     // Add or Edit Task Bottom Sheet

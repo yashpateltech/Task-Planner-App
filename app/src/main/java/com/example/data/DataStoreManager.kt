@@ -20,7 +20,7 @@ enum class ThemeMode {
 }
 
 data class UserPreferences(
-    val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val themeMode: ThemeMode = ThemeMode.DARK,
     val defaultAlarmOffsetMinutes: Int = 0,
     val notificationSoundEnabled: Boolean = true,
     val notificationVibrateEnabled: Boolean = true
@@ -36,11 +36,11 @@ class DataStoreManager(private val context: Context) {
     }
 
     val userPreferencesFlow: Flow<UserPreferences> = context.dataStore.data.map { preferences ->
-        val themeString = preferences[PreferencesKeys.THEME_MODE] ?: ThemeMode.SYSTEM.name
+        val themeString = preferences[PreferencesKeys.THEME_MODE] ?: ThemeMode.DARK.name
         val themeMode = try {
             ThemeMode.valueOf(themeString)
         } catch (_: Exception) {
-            ThemeMode.SYSTEM
+            ThemeMode.DARK
         }
         val defaultOffset = preferences[PreferencesKeys.DEFAULT_ALARM_OFFSET] ?: 0
         val sound = preferences[PreferencesKeys.NOTIFICATION_SOUND] ?: true

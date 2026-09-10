@@ -1,12 +1,16 @@
 package com.example.ui.components
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -21,6 +25,8 @@ import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,7 +37,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SheetState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -46,10 +54,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.data.TaskEntity
+import com.example.ui.theme.DarkBlackText
+import com.example.ui.theme.DarkBlackVariantText
+import com.example.ui.theme.PinkGradients
+import com.example.ui.theme.PinkPrimary
+import com.example.ui.theme.WhiteBackground
 import com.example.utils.DateTimeUtils
 import java.util.Calendar
 
@@ -97,6 +111,7 @@ fun AddTaskBottomSheet(
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
         modifier = Modifier.testTag("add_task_bottom_sheet")
     ) {
         Column(
@@ -122,13 +137,28 @@ fun AddTaskBottomSheet(
                     if (it.isNotBlank()) isTitleError = false
                 },
                 label = { Text("Task Title *") },
-                placeholder = { Text("e.g. Design review meeting") },
+                placeholder = {
+                    Text(
+                        text = "e.g. Design review meeting",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f)
+                    )
+                },
                 isError = isTitleError,
                 supportingText = {
                     if (isTitleError) {
-                        Text("Title is required")
+                        Text("Title is required", color = MaterialTheme.colorScheme.error)
                     }
                 },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    focusedLabelColor = PinkPrimary,
+                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    focusedBorderColor = PinkPrimary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                ),
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
@@ -143,7 +173,22 @@ fun AddTaskBottomSheet(
                 value = description,
                 onValueChange = { description = it },
                 label = { Text("Description (Optional)") },
-                placeholder = { Text("Add notes, checklist or details") },
+                placeholder = {
+                    Text(
+                        text = "Add notes, checklist or details",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f)
+                    )
+                },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    focusedLabelColor = PinkPrimary,
+                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    focusedBorderColor = PinkPrimary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                ),
                 minLines = 2,
                 maxLines = 4,
                 shape = RoundedCornerShape(12.dp),
@@ -173,7 +218,11 @@ fun AddTaskBottomSheet(
                     modifier = Modifier
                         .weight(1f)
                         .testTag("date_picker_button"),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.outlinedCardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    ),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                 ) {
                     Row(
                         modifier = Modifier.padding(14.dp),
@@ -182,19 +231,20 @@ fun AddTaskBottomSheet(
                         Icon(
                             imageVector = Icons.Default.CalendarToday,
                             contentDescription = "Select Date",
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = PinkPrimary,
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             Text(
                                 text = "Date",
-                                style = MaterialTheme.typography.labelSmall,
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
                                 text = DateTimeUtils.formatDate(selectedDateMillis),
-                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                                color = MaterialTheme.colorScheme.onSurface,
                                 maxLines = 1
                             )
                         }
@@ -207,7 +257,11 @@ fun AddTaskBottomSheet(
                     modifier = Modifier
                         .weight(1f)
                         .testTag("time_picker_button"),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.outlinedCardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    ),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                 ) {
                     Row(
                         modifier = Modifier.padding(14.dp),
@@ -216,14 +270,14 @@ fun AddTaskBottomSheet(
                         Icon(
                             imageVector = Icons.Default.AccessTime,
                             contentDescription = "Select Time",
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = PinkPrimary,
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             Text(
                                 text = "Time",
-                                style = MaterialTheme.typography.labelSmall,
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             val displayTime = Calendar.getInstance().apply {
@@ -232,7 +286,8 @@ fun AddTaskBottomSheet(
                             }.timeInMillis
                             Text(
                                 text = DateTimeUtils.formatTime(displayTime),
-                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                                color = MaterialTheme.colorScheme.onSurface,
                                 maxLines = 1
                             )
                         }
@@ -250,13 +305,14 @@ fun AddTaskBottomSheet(
                 Icon(
                     imageVector = Icons.Default.Alarm,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = PinkPrimary,
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "Notify Me",
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
@@ -269,11 +325,17 @@ fun AddTaskBottomSheet(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 offsets.forEach { (mins, label) ->
+                    val isSelected = reminderOffset == mins
                     FilterChip(
-                        selected = reminderOffset == mins,
+                        selected = isSelected,
                         onClick = { reminderOffset = mins },
-                        label = { Text(label) },
-                        leadingIcon = if (reminderOffset == mins) {
+                        label = {
+                            Text(
+                                text = label,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                            )
+                        },
+                        leadingIcon = if (isSelected) {
                             {
                                 Icon(
                                     imageVector = Icons.Default.Check,
@@ -282,7 +344,20 @@ fun AddTaskBottomSheet(
                                 )
                             }
                         } else null,
-                        colors = FilterChipDefaults.filterChipColors()
+                        border = FilterChipDefaults.filterChipBorder(
+                            enabled = true,
+                            selected = isSelected,
+                            borderColor = MaterialTheme.colorScheme.outline,
+                            selectedBorderColor = PinkPrimary,
+                            borderWidth = 1.dp
+                        ),
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = PinkPrimary,
+                            selectedLabelColor = Color.White,
+                            selectedLeadingIconColor = Color.White,
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            labelColor = MaterialTheme.colorScheme.onSurface
+                        )
                     )
                 }
             }
@@ -292,7 +367,8 @@ fun AddTaskBottomSheet(
             // Priority Selector
             Text(
                 text = "Priority Level",
-                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)
+                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -303,10 +379,29 @@ fun AddTaskBottomSheet(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 priorities.forEach { p ->
+                    val isSelected = selectedPriority.equals(p, ignoreCase = true)
                     FilterChip(
-                        selected = selectedPriority.equals(p, ignoreCase = true),
+                        selected = isSelected,
                         onClick = { selectedPriority = p },
-                        label = { Text(p) },
+                        label = {
+                            Text(
+                                text = p,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                            )
+                        },
+                        border = FilterChipDefaults.filterChipBorder(
+                            enabled = true,
+                            selected = isSelected,
+                            borderColor = MaterialTheme.colorScheme.outline,
+                            selectedBorderColor = PinkPrimary,
+                            borderWidth = 1.dp
+                        ),
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = PinkPrimary,
+                            selectedLabelColor = Color.White,
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            labelColor = MaterialTheme.colorScheme.onSurface
+                        ),
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -326,10 +421,10 @@ fun AddTaskBottomSheet(
                         .height(48.dp)
                         .testTag("cancel_task_button")
                 ) {
-                    Text("Cancel")
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
 
-                Button(
+                Surface(
                     onClick = {
                         if (title.isBlank()) {
                             isTitleError = true
@@ -352,9 +447,22 @@ fun AddTaskBottomSheet(
                         .weight(1.5f)
                         .height(48.dp)
                         .testTag("save_task_button"),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color.Transparent,
+                    shadowElevation = 2.dp
                 ) {
-                    Text(if (initialTask == null) "Schedule Task" else "Update Task")
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(PinkGradients.Primary),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (initialTask == null) "Schedule Task" else "Update Task",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }

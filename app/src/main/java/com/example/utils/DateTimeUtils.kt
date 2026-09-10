@@ -48,6 +48,48 @@ object DateTimeUtils {
         return standardDateFormat.format(Date(timestamp))
     }
 
+    fun getDateKey(timestamp: Long): String {
+        return standardDateFormat.format(Date(timestamp))
+    }
+
+    fun getDayOfMonth(timestamp: Long): Int {
+        val cal = Calendar.getInstance().apply { timeInMillis = timestamp }
+        return cal.get(Calendar.DAY_OF_MONTH)
+    }
+
+    fun getDayAbbreviation(timestamp: Long): String {
+        val format = SimpleDateFormat("EEE", Locale.getDefault())
+        return format.format(Date(timestamp))
+    }
+
+    fun getMonthYearTitle(calendar: Calendar): String {
+        val format = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
+        return format.format(calendar.time)
+    }
+
+    fun getShortDate(timestamp: Long): String {
+        val format = SimpleDateFormat("MMM d", Locale.getDefault())
+        return format.format(Date(timestamp))
+    }
+
+    fun isSameDay(t1: Long, t2: Long): Boolean {
+        val c1 = Calendar.getInstance().apply { timeInMillis = t1 }
+        val c2 = Calendar.getInstance().apply { timeInMillis = t2 }
+        return c1.get(Calendar.YEAR) == c2.get(Calendar.YEAR) &&
+                c1.get(Calendar.DAY_OF_YEAR) == c2.get(Calendar.DAY_OF_YEAR)
+    }
+
+    fun getStartOfDay(timestamp: Long): Long {
+        val cal = Calendar.getInstance().apply {
+            timeInMillis = timestamp
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        return cal.timeInMillis
+    }
+
     fun combineDateAndTime(dateMillis: Long, hour: Int, minute: Int): Long {
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = dateMillis

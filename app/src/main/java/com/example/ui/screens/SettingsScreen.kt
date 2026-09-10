@@ -7,6 +7,7 @@ import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,6 +50,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -58,6 +60,7 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -69,6 +72,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -77,6 +81,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.alarm.AlarmScheduler
 import com.example.data.ThemeMode
+import com.example.ui.components.MadeWithLoveFooter
+import com.example.ui.theme.PinkGradients
+import com.example.ui.theme.PinkPrimary
+import com.example.ui.theme.WhiteBackground
 import com.example.utils.StorageUtils
 import com.example.viewmodel.TaskViewModel
 import java.io.File
@@ -113,12 +121,14 @@ fun SettingsScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        containerColor = WhiteBackground,
         topBar = {
             TopAppBar(
                 title = {
                     Text(
                         text = "Settings & Storage",
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                        color = Color(0xFF1E1317)
                     )
                 },
                 navigationIcon = {
@@ -128,7 +138,8 @@ fun SettingsScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Back",
+                            tint = PinkPrimary
                         )
                     }
                 },
@@ -139,12 +150,13 @@ fun SettingsScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
-                            contentDescription = "Refresh Stats"
+                            contentDescription = "Refresh Stats",
+                            tint = PinkPrimary
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    containerColor = WhiteBackground
                 )
             )
         }
@@ -152,6 +164,7 @@ fun SettingsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(WhiteBackground)
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
@@ -163,7 +176,9 @@ fun SettingsScreen(
                     .fillMaxWidth()
                     .testTag("storage_stats_card"),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                border = BorderStroke(1.dp, Color(0xFFFDE8EF)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(
@@ -172,14 +187,14 @@ fun SettingsScreen(
                     ) {
                         Surface(
                             shape = RoundedCornerShape(10.dp),
-                            color = MaterialTheme.colorScheme.primaryContainer,
+                            color = Color(0xFFFDE8EF),
                             modifier = Modifier.size(36.dp)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     imageVector = Icons.Default.Storage,
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
+                                    tint = PinkPrimary,
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
@@ -238,7 +253,7 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // OS App Storage Settings Button
-                    Button(
+                    Surface(
                         onClick = {
                             val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                                 data = Uri.fromParts("package", context.packageName, null)
@@ -247,20 +262,29 @@ fun SettingsScreen(
                         },
                         modifier = Modifier
                             .fillMaxWidth()
+                            .height(44.dp)
                             .testTag("open_os_storage_settings_button"),
                         shape = RoundedCornerShape(10.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
+                        color = Color.Transparent,
+                        shadowElevation = 2.dp
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.OpenInNew,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Open OS App Storage Settings")
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(PinkGradients.Secondary),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.OpenInNew,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Open OS App Storage Settings", color = Color.White, fontWeight = FontWeight.SemiBold)
+                            }
+                        }
                     }
                 }
             }
@@ -271,20 +295,22 @@ fun SettingsScreen(
                     .fillMaxWidth()
                     .testTag("backup_restore_card"),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                border = BorderStroke(1.dp, Color(0xFFFDE8EF)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Surface(
                             shape = RoundedCornerShape(10.dp),
-                            color = MaterialTheme.colorScheme.tertiaryContainer,
+                            color = Color(0xFFFDE8EF),
                             modifier = Modifier.size(36.dp)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     imageVector = Icons.Default.Folder,
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.tertiary,
+                                    tint = PinkPrimary,
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
@@ -309,17 +335,29 @@ fun SettingsScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        // Export button
-                        Button(
+                        // Export button with gradient
+                        Surface(
                             onClick = { viewModel.exportBackup() },
                             modifier = Modifier
                                 .weight(1f)
+                                .height(44.dp)
                                 .testTag("export_backup_button"),
-                            shape = RoundedCornerShape(10.dp)
+                            shape = RoundedCornerShape(10.dp),
+                            color = Color.Transparent,
+                            shadowElevation = 2.dp
                         ) {
-                            Icon(Icons.Default.Upload, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text("Export JSON")
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(PinkGradients.Primary),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(Icons.Default.Upload, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text("Export JSON", color = Color.White, fontWeight = FontWeight.Bold)
+                                }
+                            }
                         }
 
                         // Import from file button
@@ -327,12 +365,15 @@ fun SettingsScreen(
                             onClick = { filePickerLauncher.launch("application/json") },
                             modifier = Modifier
                                 .weight(1f)
+                                .height(44.dp)
                                 .testTag("import_backup_button"),
-                            shape = RoundedCornerShape(10.dp)
+                            shape = RoundedCornerShape(10.dp),
+                            border = BorderStroke(1.dp, PinkPrimary),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = PinkPrimary)
                         ) {
                             Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Import JSON")
+                            Text("Import JSON", fontWeight = FontWeight.SemiBold)
                         }
                     }
 
@@ -350,7 +391,9 @@ fun SettingsScreen(
                             backupFiles.forEach { file ->
                                 OutlinedCard(
                                     modifier = Modifier.fillMaxWidth(),
-                                    shape = RoundedCornerShape(8.dp)
+                                    shape = RoundedCornerShape(8.dp),
+                                    border = BorderStroke(1.dp, Color(0xFFFDE8EF)),
+                                    colors = CardDefaults.outlinedCardColors(containerColor = Color(0xFFFFF9FB))
                                 ) {
                                     Row(
                                         modifier = Modifier
@@ -386,7 +429,7 @@ fun SettingsScreen(
                                                 Icon(
                                                     imageVector = Icons.Default.Restore,
                                                     contentDescription = "Restore backup",
-                                                    tint = MaterialTheme.colorScheme.primary,
+                                                    tint = PinkPrimary,
                                                     modifier = Modifier.size(18.dp)
                                                 )
                                             }
@@ -417,7 +460,9 @@ fun SettingsScreen(
                     .fillMaxWidth()
                     .testTag("theme_preferences_card"),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                border = BorderStroke(1.dp, Color(0xFFFDE8EF)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
@@ -444,9 +489,9 @@ fun SettingsScreen(
                                 label = {
                                     Text(
                                         text = when (mode) {
-                                            ThemeMode.SYSTEM -> "System"
-                                            ThemeMode.LIGHT -> "Light"
-                                            ThemeMode.DARK -> "Dark"
+                                             ThemeMode.SYSTEM -> "System"
+                                             ThemeMode.LIGHT -> "Light"
+                                             ThemeMode.DARK -> "Dark"
                                         }
                                     )
                                 },
@@ -455,6 +500,11 @@ fun SettingsScreen(
                                         Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
                                     }
                                 } else null,
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = PinkPrimary,
+                                    selectedLabelColor = Color.White,
+                                    containerColor = Color.White
+                                ),
                                 modifier = Modifier.weight(1f)
                             )
                         }
@@ -468,7 +518,9 @@ fun SettingsScreen(
                     .fillMaxWidth()
                     .testTag("alarm_preferences_card"),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                border = BorderStroke(1.dp, Color(0xFFFDE8EF)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
@@ -500,13 +552,18 @@ fun SettingsScreen(
                                 selected = userPreferences.defaultAlarmOffsetMinutes == mins,
                                 onClick = { viewModel.setDefaultAlarmOffset(mins) },
                                 label = { Text(label) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = PinkPrimary,
+                                    selectedLabelColor = Color.White,
+                                    containerColor = Color.White
+                                ),
                                 modifier = Modifier.weight(1f)
                             )
                         }
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(color = Color(0xFFFDE8EF))
                     Spacer(modifier = Modifier.height(8.dp))
 
                     // Sound switch
@@ -519,7 +576,7 @@ fun SettingsScreen(
                             Icon(
                                 imageVector = Icons.Default.VolumeUp,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
+                                tint = PinkPrimary,
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(12.dp))
@@ -531,6 +588,10 @@ fun SettingsScreen(
                         Switch(
                             checked = userPreferences.notificationSoundEnabled,
                             onCheckedChange = { viewModel.setNotificationSound(it) },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = PinkPrimary
+                            ),
                             modifier = Modifier.testTag("sound_preference_switch")
                         )
                     }
@@ -547,7 +608,7 @@ fun SettingsScreen(
                             Icon(
                                 imageVector = Icons.Default.Vibration,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
+                                tint = PinkPrimary,
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(12.dp))
@@ -559,6 +620,10 @@ fun SettingsScreen(
                         Switch(
                             checked = userPreferences.notificationVibrateEnabled,
                             onCheckedChange = { viewModel.setNotificationVibrate(it) },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = PinkPrimary
+                            ),
                             modifier = Modifier.testTag("vibrate_preference_switch")
                         )
                     }
@@ -571,7 +636,9 @@ fun SettingsScreen(
                     .fillMaxWidth()
                     .testTag("permissions_diagnostics_card"),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                border = BorderStroke(1.dp, Color(0xFFFDE8EF)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
@@ -602,6 +669,10 @@ fun SettingsScreen(
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            MadeWithLoveFooter()
+            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 
@@ -665,20 +736,21 @@ fun StatItem(
 ) {
     Surface(
         shape = RoundedCornerShape(10.dp),
-        color = MaterialTheme.colorScheme.surface,
+        color = Color(0xFFFFF9FB),
+        border = BorderStroke(1.dp, Color(0xFFFDE8EF)),
         modifier = modifier
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = Color(0xFF8B6B78)
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = value,
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onSurface
+                color = Color(0xFF1E1317)
             )
         }
     }
@@ -693,7 +765,8 @@ fun PermissionStatusRow(
 ) {
     Surface(
         shape = RoundedCornerShape(8.dp),
-        color = MaterialTheme.colorScheme.surface,
+        color = Color(0xFFFFF9FB),
+        border = BorderStroke(1.dp, Color(0xFFFDE8EF)),
         onClick = onClick,
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -705,13 +778,13 @@ fun PermissionStatusRow(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium))
-                Text(status, style = MaterialTheme.typography.bodySmall, color = if (isGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error)
+                Text(title, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium), color = Color(0xFF1E1317))
+                Text(status, style = MaterialTheme.typography.bodySmall, color = if (isGranted) PinkPrimary else MaterialTheme.colorScheme.error)
             }
             Icon(
                 imageVector = Icons.Default.OpenInNew,
                 contentDescription = "Configure",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = PinkPrimary,
                 modifier = Modifier.size(16.dp)
             )
         }
